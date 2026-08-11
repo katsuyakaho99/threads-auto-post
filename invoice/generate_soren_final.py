@@ -169,6 +169,6 @@ august_items = [
 ]
 
 build(os.path.join(BASE, "invoice_soren_2026-07.xlsx"),
-      "2026-07", "2026/07/31", "2026/08/31", july_items)
+      "2026-07", "2026/07/31", "", july_items)
 build(os.path.join(BASE, "invoice_soren_2026-08.xlsx"),
-      "2026-08", "2026/08/31", "2026/09/30", august_items)
+      "2026-08", "2026/08/31", "", august_items)

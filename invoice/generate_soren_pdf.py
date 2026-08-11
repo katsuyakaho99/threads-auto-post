@@ -218,6 +218,6 @@ july_remarks = [
     "地下鉄 梅田→阿波座 ¥240",
 ]
 build(os.path.join(BASE, "請求書_株式会社蒼蓮_2026年7月分.pdf"),
-      "2026-07", "2026/07/31", "2026/08/31", july_items, remarks=july_remarks)
+      "2026-07", "2026/07/31", "", july_items, remarks=july_remarks)
 build(os.path.join(BASE, "請求書_株式会社蒼蓮_2026年8月分.pdf"),
-      "2026-08", "2026/08/31", "2026/09/30", august_items)
+      "2026-08", "2026/08/31", "", august_items)
