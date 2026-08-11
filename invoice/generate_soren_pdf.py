@@ -25,7 +25,7 @@ def yen(n):
     return f"¥{n:,}"
 
 
-def build(path, inv_no, issue_date, due_date, items):
+def build(path, inv_no, issue_date, due_date, items, remarks=None):
     c = canvas.Canvas(path, pagesize=A4)
 
     def text(x, y, s, size=10, color=black):
@@ -114,25 +114,75 @@ def build(path, inv_no, issue_date, due_date, items):
         c.line(x, ty, x, cur)
     c.line(L, ty, R, ty)
 
-    # ---- 集計（金額列に揃える）----
-    sy = cur - 6
+    # ---- 集計行の定義 ----
     rows = [("小計", total, False),
             ("調整額（インボイス経過措置 8%）", adj, False),
             ("合計（税込）", grand, True)]
-    rh = 22
-    for label, val, strong in rows:
-        bot = sy - rh
-        if strong:
-            c.setFillColor(BAND); c.rect(c_amt[0], bot, c_amt[1] - c_amt[0], rh, fill=1, stroke=0)
+
+    def fit_size(s, max_w, max_size, min_size=7.0):
+        sz = max_size
+        while sz > min_size and c.stringWidth(s, FONT, sz) > max_w:
+            sz -= 0.5
+        return sz
+
+    if remarks:
+        # 備考（左）＋ 集計（右）を同じ高さで配置
+        rm_right = L + 250          # 備考ボックス右端
+        pad = 6
+        line_h = 11.5
+        head_h = 18
+        body_h = len(remarks) * line_h + 10
+        block_h = head_h + body_h
+        rh = block_h / 3.0
+        block_top = cur - 8
+
+        # 備考ヘッダ
+        c.setFillColor(NAVY)
+        c.rect(L, block_top - head_h, rm_right - L, head_h, fill=1, stroke=0)
+        text(L + 6, block_top - head_h + 5, "備考", size=10, color=white)
+        # 備考ボックス枠
         c.setStrokeColor(GRAY); c.setLineWidth(0.5)
-        c.rect(c_amt[0], bot, c_amt[1] - c_amt[0], rh, fill=0, stroke=1)
-        col = NAVY if strong else black
-        rtext(c_amt[0] - 8, bot + 7, label, size=11 if strong else 10, color=col)
-        rtext(c_amt[1] - 6, bot + 7, yen(val), size=11 if strong else 10, color=col)
-        sy = bot
+        c.rect(L, block_top - block_h, rm_right - L, body_h, fill=0, stroke=1)
+        # 備考本文
+        ly = block_top - head_h - pad - 5
+        for line in remarks:
+            if line:
+                sz = fit_size(line, rm_right - L - 2 * pad, 9.0, 7.0)
+                text(L + pad, ly, line, size=sz, color=black)
+            ly -= line_h
+
+        # 集計（右・金額列に揃える。3行で備考と同じ高さ）
+        sy = block_top
+        for label, val, strong in rows:
+            bot = sy - rh
+            midy = bot + rh / 2 - 4
+            if strong:
+                c.setFillColor(BAND); c.rect(c_amt[0], bot, c_amt[1] - c_amt[0], rh, fill=1, stroke=0)
+            c.setStrokeColor(GRAY); c.setLineWidth(0.5)
+            c.rect(c_amt[0], bot, c_amt[1] - c_amt[0], rh, fill=0, stroke=1)
+            col = NAVY if strong else black
+            lsz = fit_size(label, c_amt[0] - 8 - rm_right, 10.0, 7.0)
+            rtext(c_amt[0] - 8, midy, label, size=11 if strong else lsz, color=col)
+            rtext(c_amt[1] - 6, midy, yen(val), size=11 if strong else 10, color=col)
+            sy = bot
+        sy = block_top - block_h
+    else:
+        # 集計のみ（金額列に揃えて縦積み）
+        sy = cur - 6
+        rh = 22
+        for label, val, strong in rows:
+            bot = sy - rh
+            if strong:
+                c.setFillColor(BAND); c.rect(c_amt[0], bot, c_amt[1] - c_amt[0], rh, fill=1, stroke=0)
+            c.setStrokeColor(GRAY); c.setLineWidth(0.5)
+            c.rect(c_amt[0], bot, c_amt[1] - c_amt[0], rh, fill=0, stroke=1)
+            col = NAVY if strong else black
+            rtext(c_amt[0] - 8, bot + 7, label, size=11 if strong else 10, color=col)
+            rtext(c_amt[1] - 6, bot + 7, yen(val), size=11 if strong else 10, color=col)
+            sy = bot
 
     # ---- お振込先 ----
-    by2 = sy - 34
+    by2 = sy - 30
     text(L, by2, "お振込先", size=11, color=NAVY)
     c.setStrokeColor(NAVY); c.setLineWidth(0.8); c.line(L, by2 - 4, L + 250, by2 - 4)
     for i, line in enumerate(["三井住友銀行　姫路支店", "普通　9554406",
@@ -155,7 +205,19 @@ august_items = [
     ("8/4 交通費（バス 土佐堀2丁目→堂島）", 1, 210),
 ]
 
+july_remarks = [
+    "7/22 現地移動交通費（内訳）",
+    "新幹線 新大阪→新横浜（スマートEX）¥14,190",
+    "JR 大阪→新大阪 ¥180　新横浜→菊名 ¥155",
+    "東急菊名→みなとみらい ¥373",
+    "",
+    "7/23 現地移動交通費（内訳）",
+    "新幹線 新横浜→京都（スマートEX）¥13,300",
+    "みなとみらい→東急菊名 ¥373",
+    "菊名→新横浜 ¥155　JR 京都→大阪 ¥580",
+    "地下鉄 梅田→阿波座 ¥240",
+]
 build(os.path.join(BASE, "請求書_株式会社蒼蓮_2026年7月分.pdf"),
-      "2026-07", "2026/07/31", "2026/08/31", july_items)
+      "2026-07", "2026/07/31", "2026/08/31", july_items, remarks=july_remarks)
 build(os.path.join(BASE, "請求書_株式会社蒼蓮_2026年8月分.pdf"),
       "2026-08", "2026/08/31", "2026/09/30", august_items)
