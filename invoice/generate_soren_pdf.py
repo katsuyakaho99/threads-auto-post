@@ -213,4 +213,4 @@ remarks = [
 ]
 
 build(os.path.join(BASE, "請求書_株式会社蒼蓮.pdf"),
-      "2026-0708", "2026/08/23", "", items, remarks=remarks)
+      "2026-0708", "2026/07/31", "", items, remarks=remarks)
