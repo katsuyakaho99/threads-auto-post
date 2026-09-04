@@ -57,7 +57,7 @@ def build(path, inv_no, issue_date, due_date, items, remarks=None):
     c.setStrokeColor(HexColor("#808080")); c.setLineWidth(0.6)
     c.line(L, y - 4, L + 250, y - 4)
     text(L, y - 18, "ご担当：小笹彩加 様", size=9.5)
-    text(L, y - 33, "〒542-0012 大阪市中央区谷町6丁目3番25号 LOK09号", size=8.5, color=DARK)
+    text(L, y - 33, "〒540-0003 大阪府大阪市中央区森ノ宮中央1丁目16-17 岡田ビル 906", size=8.5, color=DARK)
 
     # ---- 請求メタ（右）----
     my = H - 106
