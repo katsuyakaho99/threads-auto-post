@@ -130,7 +130,23 @@ def build(path, inv_no, issue_date, due_date, items, remarks=None):
         pad = 6
         line_h = 11.5
         head_h = 18
-        body_h = len(remarks) * line_h + 10
+        rsize = 8.5
+        maxw = rm_right - L - 2 * pad
+        # 長い行はボックス幅で折り返す（はみ出し防止）
+        wrapped = []
+        for line in remarks:
+            if line == "":
+                wrapped.append("")
+                continue
+            seg = ""
+            for ch in line:
+                if c.stringWidth(seg + ch, FONT, rsize) <= maxw:
+                    seg += ch
+                else:
+                    wrapped.append(seg)
+                    seg = ch
+            wrapped.append(seg)
+        body_h = len(wrapped) * line_h + 10
         block_h = head_h + body_h
         rh = block_h / 3.0
         block_top = cur - 8
@@ -141,10 +157,9 @@ def build(path, inv_no, issue_date, due_date, items, remarks=None):
         c.setStrokeColor(GRAY); c.setLineWidth(0.5)
         c.rect(L, block_top - block_h, rm_right - L, body_h, fill=0, stroke=1)
         ly = block_top - head_h - pad - 5
-        for line in remarks:
+        for line in wrapped:
             if line:
-                sz = fit_size(line, rm_right - L - 2 * pad, 9.0, 7.0)
-                text(L + pad, ly, line, size=sz, color=black)
+                text(L + pad, ly, line, size=rsize, color=black)
             ly -= line_h
 
         sy = block_top
@@ -240,11 +255,12 @@ sep_items = [
     ("9月 交通費（阿波座↔森ノ宮 往復 ¥480×9日）", 4320, 0),
 ]
 sep_remarks = [
-    "基本料金：試用期間 月額 ¥100,000（契約100時間）＋税8%",
-    "超過勤務：実稼働109:30 − 100:00 = 9.5h × ¥1,300 = ¥12,350（＋税8%）",
+    "基本料金：試用期間 月額 ¥100,000（契約100h）＋税8%",
+    "超過勤務：9.5h × ¥1,300 = ¥12,350（＋税8%）",
+    "　（実稼働 109:30 − 契約 100:00 = 9.5h）",
     "",
-    "交通費：阿波座↔森ノ宮　往復 ¥480/日（片道 ¥240×2）",
-    "　　　　出勤 9日分 × ¥480 = ¥4,320（リモート日は対象外）",
+    "交通費：阿波座↔森ノ宮 往復 ¥480/日（片道¥240×2）",
+    "　出勤 9日 × ¥480 = ¥4,320（リモート日は対象外）",
 ]
 build(os.path.join(BASE, "請求書_勝矢夏帆_2026年9月分.pdf"),
       "2026-09", "2026/09/30", "", sep_items, remarks=sep_remarks)
