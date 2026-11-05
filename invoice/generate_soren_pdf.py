@@ -26,7 +26,7 @@ def yen(n):
     return f"¥{n:,}"
 
 
-def build(path, inv_no, issue_date, due_date, items, remarks=None):
+def build(path, inv_no, issue_date, due_date, items, remarks=None, adj_label="調整額（8%）"):
     """items: list of (品目, 金額, 消費税)"""
     c = canvas.Canvas(path, pagesize=A4)
 
@@ -122,7 +122,7 @@ def build(path, inv_no, issue_date, due_date, items, remarks=None):
 
     # ---- 集計行の定義 ----
     rows = [("小計", subtotal, False),
-            ("調整額（8%）", adjust, False),
+            (adj_label, adjust, False),
             ("合計（税込）", grand, True)]
 
     if remarks:
@@ -264,3 +264,21 @@ sep_remarks = [
 ]
 build(os.path.join(BASE, "請求書_勝矢夏帆_2026年9月分.pdf"),
       "2026-09", "2026/09/30", "", sep_items, remarks=sep_remarks)
+
+
+# ===== 2026年10月度（時給制・消費税7%）=====
+oct_items = [
+    ("10月度 業務委託料（時給¥1,400 × 125時間）", 175000, 12250),
+    ("10月 交通費（阿波座↔森ノ宮 往復 ¥480×7日）", 3360, 0),
+]
+oct_remarks = [
+    "報酬：時給 ¥1,400 × 125時間 = ¥175,000（＋税7%）",
+    "",
+    "交通費：阿波座↔森ノ宮 往復 ¥480/日（片道¥240×2）",
+    "　出勤 7日 × ¥480 = ¥3,360（リモート日は対象外）",
+    "",
+    "※今月より消費税（調整額）は7%で計上",
+]
+build(os.path.join(BASE, "請求書_勝矢夏帆_2026年10月分.pdf"),
+      "2026-10", "2026/10/31", "", oct_items, remarks=oct_remarks,
+      adj_label="調整額（7%）")
